@@ -65,7 +65,7 @@ def getItem():
 
 @app.route("/api/getUsers")
 def get_users():
-    cnx = mysql.connector.connect(user='root', password="cream", database='ims')
+    cnx = mysql.connector.connect(user='root', password="", database="")
     cursor = cnx.cursor(dictionary=True)
 
     cursor.execute("SELECT * FROM users")
