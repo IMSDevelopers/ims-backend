@@ -20,9 +20,30 @@ except mysql.connector.Error as err:
 @app.route('/api/getUser')
 def index():
     cursor = cnx.cursor()
-    cursor.execute("SELECT * from user where user.id=1")
+    cursor.execute("SELECT * from user where users.id=1")
     data = cursor.fetchall()
+
     return str(data)
+
+
+
+@app.route('/api/getItemDatabase')
+def getItem():
+    query = "SELECT * from items where items.id=" + request.args.get('id')
+    print(query, type(query))
+    cursor = cnx.cursor()
+    cursor.execute(query)
+    data = cursor.fetchall()
+
+    result = []
+
+    for row in data:
+        print(row)
+        result.append(row)
+        
+    print(data)
+    print(data[0])
+    return jsonify(result)
 
 
 # @app.route('/api/postItem', methods = ['POST'])
