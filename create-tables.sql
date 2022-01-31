@@ -4,10 +4,8 @@ CREATE TABLE `items` (
   `quantity` int NOT NULL,
   `description` varchar(240) DEFAULT NULL,
   `url_image` varchar(240) DEFAULT NULL,
-  `category` varchar(240) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 CREATE TABLE `users` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -18,15 +16,15 @@ CREATE TABLE `users` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 CREATE TABLE `orders` (
-  `id` int NOT NULL AUTO_INCREMENT,
   `time_placed` datetime NOT NULL,
-  `amount` int NOT NULL,
+  `quantity` int NOT NULL,
   `accepted` bit(2) NOT NULL,
   `user_id` int NOT NULL,
   `item_id` int NOT NULL,
-  PRIMARY KEY (`id`),
+  PRIMARY KEY (`user_id`,`item_id`),
   KEY `user_id_idx` (`user_id`),
   KEY `item_id_idx` (`item_id`),
   CONSTRAINT `item_id` FOREIGN KEY (`item_id`) REFERENCES `items` (`id`),
   CONSTRAINT `user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+

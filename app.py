@@ -3,6 +3,7 @@ from flask import jsonify, request, make_response
 from flask_cors import CORS
 import mysql.connector
 
+#Create the flask app
 app = Flask(__name__)
 CORS(app)
 
@@ -10,10 +11,11 @@ CORS(app)
 def home():
     return "Hello, Flask!"
 
-@app.route('/api/getItem')
-def getItem():
-    query = "SELECT * from items where items.id=" + request.args.get('id')
-    cnx = mysql.connector.connect(user='root', password="", database="")
+#Get an item by input
+@app.route('/api/getItemById')
+def get_item():
+    query = "SELECT * FROM items WHERE items.id=" + request.args.get('id')
+    cnx = mysql.connector.connect(user='root', password="root", database="ims_database")
     cursor = cnx.cursor(dictionary=True)
 
     cursor.execute(query)
@@ -28,9 +30,42 @@ def getItem():
     cnx.close()
     return jsonify(result)
 
+
+#Get items
+@app.route('/api/getItems')
+def get_items():
+    cnx = mysql.connector.connect(user='root', password="root", database="ims_database")
+    cursor = cnx.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM items")
+
+    result = []
+
+    for row in cursor:
+        result.append(row)
+
+    cursor.close()
+    cnx.close()
+    return jsonify(result)
+
+#Post an Item
+@app.route('/api/postItem')
+def post_item():
+    cnx = mysql.connector.connect(user='root', password="root", database="ims_database")
+    cursor = cnx.cursor(dictionary=True)
+
+    request_data =  request.data()
+    #request.get_json()
+
+    print(request_data)
+    cursor.close()
+    cnx.close()
+#Enter data in mysql
+    return jsonify(request_data)
+
+#Get users
 @app.route("/api/getUsers")
 def get_users():
-    cnx = mysql.connector.connect(user='root', password="", database="")
+    cnx = mysql.connector.connect(user='root', password="root", database="ims_database")
     cursor = cnx.cursor(dictionary=True)
 
     cursor.execute("SELECT * FROM users")
