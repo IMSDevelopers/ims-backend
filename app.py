@@ -7,6 +7,10 @@ import mysql.connector
 app = Flask(__name__)
 CORS(app)
 
+USERNAME = "root"
+PASSWORD = ""
+DATABASE = ""
+
 @app.route("/")
 def home():
     return "Hello, Flask!"
@@ -15,7 +19,7 @@ def home():
 @app.route('/api/getItemById')
 def get_item():
     query = "SELECT * FROM items WHERE items.id=" + request.args.get('id')
-    cnx = mysql.connector.connect(user='root', password="root", database="ims_database")
+    cnx = mysql.connector.connect(user=USERNAME, password=PASSWORD, database=DATABASE)
     cursor = cnx.cursor(dictionary=True)
 
     cursor.execute(query)
@@ -34,7 +38,7 @@ def get_item():
 #Get items
 @app.route('/api/getItems')
 def get_items():
-    cnx = mysql.connector.connect(user='root', password="root", database="ims_database")
+    cnx = mysql.connector.connect(user=USERNAME, password=PASSWORD, database=DATABASE)
     cursor = cnx.cursor(dictionary=True)
     cursor.execute("SELECT * FROM items")
 
@@ -50,7 +54,7 @@ def get_items():
 #Post an Item
 @app.route('/api/postItem')
 def post_item():
-    cnx = mysql.connector.connect(user='root', password="root", database="ims_database")
+    cnx = mysql.connector.connect(user=USERNAME, password=PASSWORD, database=DATABASE)
     cursor = cnx.cursor(dictionary=True)
 
     request_data =  request.data()
@@ -65,7 +69,7 @@ def post_item():
 #Get users
 @app.route("/api/getUsers")
 def get_users():
-    cnx = mysql.connector.connect(user='root', password="root", database="ims_database")
+    cnx = mysql.connector.connect(user=USERNAME, password=PASSWORD, database=DATABASE)
     cursor = cnx.cursor(dictionary=True)
 
     cursor.execute("SELECT * FROM users")
