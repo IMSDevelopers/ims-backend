@@ -52,19 +52,21 @@ def get_items():
     return jsonify(result)
 
 #Post an Item
-@app.route('/api/postItem')
+@app.route("/api/postItem", methods=['POST'])
 def post_item():
     cnx = mysql.connector.connect(user=USERNAME, password=PASSWORD, database=DATABASE)
     cursor = cnx.cursor(dictionary=True)
 
-    request_data =  request.data()
-    #request.get_json()
+    rq = request.form
+    query = ("INSERT INTO items (name, quantity, description, url_image, category) VALUES ({}, {}, {}, {}, {})".format(rq["name"], rq["quantity"], rq["description"], rq["url_image"], rq["category"]))
+    cursor.execute(query)
 
-    print(request_data)
+
+    cnx.commit()
     cursor.close()
     cnx.close()
-#Enter data in mysql
-    return jsonify(request_data)
+
+    return "Success!"
 
 #Get users
 @app.route("/api/getUsers")
