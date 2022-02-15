@@ -3,7 +3,7 @@ from flask import jsonify, request, make_response
 from flask_cors import CORS
 import mysql.connector
 
-#Create the flask app
+# Create the flask app
 app = Flask(__name__)
 CORS(app)
 
@@ -35,7 +35,7 @@ def get_item():
     return jsonify(result)
 
 
-#Get items
+# Get items
 @app.route('/api/getItems')
 def get_items():
     cnx = mysql.connector.connect(user=USERNAME, password=PASSWORD, database=DATABASE)
@@ -51,7 +51,7 @@ def get_items():
     cnx.close()
     return jsonify(result)
 
-#Post an Item
+# Post an Item
 @app.route("/api/postItem", methods=['POST'])
 def post_item():
     cnx = mysql.connector.connect(user=USERNAME, password=PASSWORD, database=DATABASE)
@@ -67,20 +67,3 @@ def post_item():
     cnx.close()
 
     return "Success!"
-
-#Get users
-@app.route("/api/getUsers")
-def get_users():
-    cnx = mysql.connector.connect(user=USERNAME, password=PASSWORD, database=DATABASE)
-    cursor = cnx.cursor(dictionary=True)
-
-    cursor.execute("SELECT * FROM users")
-
-    result = []
-
-    for row in cursor:
-        result.append(row)
-
-    cursor.close()
-    cnx.close()
-    return jsonify(result)
