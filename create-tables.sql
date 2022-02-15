@@ -9,7 +9,7 @@ CREATE TABLE `items` (
 
 CREATE TABLE `orders` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `time_placed` datetime NOT NULL,
+  `time_placed` smalldatetime NOT NULL,
   `accepted` bit(2) NOT NULL,
   `item_id` int NOT NULL,
   `amount` int NOT NULL,
