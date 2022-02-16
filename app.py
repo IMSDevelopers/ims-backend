@@ -7,9 +7,10 @@ import mysql.connector
 app = Flask(__name__)
 CORS(app)
 
-USERNAME = "root"
+USERNAME = ""
 PASSWORD = ""
-DATABASE = ""
+HOST = "capstonetest-db.cogzcve8vrzk.us-east-1.rds.amazonaws.com"
+DATABASE = "ims-database"
 
 @app.route("/")
 def home():
@@ -19,7 +20,7 @@ def home():
 @app.route('/api/getItemById')
 def get_item():
     query = "SELECT * FROM items WHERE items.id=" + request.args.get('id')
-    cnx = mysql.connector.connect(user=USERNAME, password=PASSWORD, database=DATABASE)
+    cnx = mysql.connector.connect(user=USERNAME, password=PASSWORD, host=HOST, database=DATABASE)
     cursor = cnx.cursor(dictionary=True)
 
     cursor.execute(query)
@@ -38,7 +39,7 @@ def get_item():
 # Get items
 @app.route('/api/getItems')
 def get_items():
-    cnx = mysql.connector.connect(user=USERNAME, password=PASSWORD, database=DATABASE)
+    cnx = mysql.connector.connect(user=USERNAME, password=PASSWORD, host=HOST, database=DATABASE)
     cursor = cnx.cursor(dictionary=True)
     cursor.execute("SELECT * FROM items")
 
@@ -54,7 +55,7 @@ def get_items():
 # Post an Item
 @app.route("/api/postItem", methods=['POST'])
 def post_item():
-    cnx = mysql.connector.connect(user=USERNAME, password=PASSWORD, database=DATABASE)
+    cnx = mysql.connector.connect(user=USERNAME, password=PASSWORD, host=HOST, database=DATABASE)
     cursor = cnx.cursor(dictionary=True)
 
     rq = request.form
