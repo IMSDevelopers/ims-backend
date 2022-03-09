@@ -59,12 +59,43 @@ def post_item():
     cursor = cnx.cursor(dictionary=True)
 
     rq = request.form
-    query = ("INSERT INTO items (name, quantity, description, url_image, category) VALUES ({}, {}, {}, {}, {})".format(rq["name"], rq["quantity"], rq["description"], rq["url_image"], rq["category"]))
+    query = ("INSERT INTO items (name, quantity, description, url_image) VALUES ({}, {}, {}, {})".format(rq["name"], rq["quantity"], rq["description"], rq["url_image"]))
     cursor.execute(query)
-
 
     cnx.commit()
     cursor.close()
     cnx.close()
 
     return "Success!"
+
+# Post an Order
+@app.route("/api/postOrder", methods=['POST'])
+def post_order():
+    cnx = mysql.connector.connect(user=USERNAME, password=PASSWORD, host=HOST, database=DATABASE)
+    cursor = cnx.cursor(dictionary=True)
+
+    rq = request.form
+    query = ("INSERT INTO orders (order_id, item_id, num_ordered, student_id) VALUES ({}, {}, {}, {})".format(rq["order_id"], rq["item_id"], rq["num_ordered"], rq["student_id"]))
+    cursor.execute(query)
+
+    cnx.commit()
+    cursor.close()
+    cnx.close()
+
+    return "Success!"
+
+# Get orders
+@app.route('/api/getOrders')
+def get_orders():
+    cnx = mysql.connector.connect(user=USERNAME, password=PASSWORD, host=HOST, database=DATABASE)
+    cursor = cnx.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM orders")
+
+    result = []
+
+    for row in cursor:
+        result.append(row)
+
+    cursor.close()
+    cnx.close()
+    return jsonify(result)
