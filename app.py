@@ -7,10 +7,10 @@ import mysql.connector
 app = Flask(__name__)
 CORS(app)
 
-USERNAME = ""
-PASSWORD = ""
-HOST = "capstonetest-db.cogzcve8vrzk.us-east-1.rds.amazonaws.com"
-DATABASE = "ims-database"
+USERNAME = "root"
+PASSWORD = "cream"
+HOST = ""
+DATABASE = "ims"
 
 @app.route("/")
 def home():
@@ -75,7 +75,7 @@ def post_order():
     cursor = cnx.cursor(dictionary=True)
 
     rq = request.form
-    query = ("INSERT INTO orders (order_id, item_id, num_ordered, student_id) VALUES ({}, {}, {}, {})".format(rq["order_id"], rq["item_id"], rq["num_ordered"], rq["student_id"]))
+    query = ("INSERT INTO orders (item_id, num_ordered, student_id) VALUES ({}, {}, {})".format(rq["item_id"], rq["num_ordered"], rq["student_id"]))
     cursor.execute(query)
 
     cnx.commit()

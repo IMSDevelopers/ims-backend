@@ -3,11 +3,12 @@ create table if not exists items (
     name varchar (30),
     quantity int,
     description text,
-    url_image text
+    url_image text,
+    unique (name)
 );
 
 create table if not exists orders (
-    order_id int not null,
+    order_id int not null auto_increment,
     item_id int,
     num_ordered int,
     student_id varchar(6),
