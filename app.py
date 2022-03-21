@@ -7,16 +7,16 @@ import mysql.connector
 app = Flask(__name__)
 CORS(app)
 
-USERNAME = "root"
-PASSWORD = "cream"
-HOST = ""
+USERNAME = ""
+PASSWORD = ""
+HOST = "capstonetest-db.cogzcve8vrzk.us-east-1.rds.amazonaws.com"
 DATABASE = "ims"
 
 @app.route("/")
 def home():
     return "Hello, Flask!"
 
-#Get an item by input
+# Get an item by input
 @app.route('/api/getItemById')
 def get_item():
     query = "SELECT * FROM items WHERE items.id=" + request.args.get('id')
