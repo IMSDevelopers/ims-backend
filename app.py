@@ -7,8 +7,8 @@ import mysql.connector
 app = Flask(__name__)
 CORS(app)
 
-USERNAME = ""
-PASSWORD = ""
+USERNAME = "admin"
+PASSWORD = "admin123"
 HOST = "capstonetest-db.cogzcve8vrzk.us-east-1.rds.amazonaws.com"
 DATABASE = "ims"
 
@@ -99,3 +99,29 @@ def get_orders():
     cursor.close()
     cnx.close()
     return jsonify(result)
+
+# Delete item
+@app.route('/api/deleteItem')
+def get_items():
+    cnx = mysql.connector.connect(user=USERNAME, password=PASSWORD, host=HOST, database=DATABASE)
+    cursor = cnx.cursor(dictionary=True)
+    cursor.execute("DELETE FROM items WHERE items.id=" + request.args.get('id'))
+
+    cnx.commit()
+    cursor.close()
+    cnx.close()
+    
+    return "Success!"
+
+# Delete order
+@app.route('/api/deleteOrder')
+def get_items():
+    cnx = mysql.connector.connect(user=USERNAME, password=PASSWORD, host=HOST, database=DATABASE)
+    cursor = cnx.cursor(dictionary=True)
+    cursor.execute("DELETE FROM orders WHERE orders.orderId=" + request.args.get('orderId'))
+
+    cnx.commit()
+    cursor.close()
+    cnx.close()
+    
+    return "Success!"
