@@ -8,10 +8,11 @@ create table if not exists items (
 );
 
 create table if not exists orders (
-    order_id int not null auto_increment,
+    id int not null auto_increment,
+    order_id int,
     item_id int,
     num_ordered int,
     student_id varchar(6),
-    foreign key (item_id) references items(id),
-    primary key (order_id, item_id)
+    foreign key (item_id) references items(id) on delete cascade,
+    primary key (id)
 );
