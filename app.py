@@ -17,9 +17,10 @@ def home():
     return "Hello, Flask!"
 
 # Get an item by input
-@app.route('/api/getItemById')
-def get_item():
-    query = "SELECT * FROM items WHERE items.id=" + request.args.get('id')
+@app.route('/api/getItem/<id>')
+def get_item(id):
+    item_id = id
+    query = "SELECT * FROM items WHERE items.id={}".format(item_id)
     cnx = mysql.connector.connect(user=USERNAME, password=PASSWORD, host=HOST, database=DATABASE)
     cursor = cnx.cursor(dictionary=True)
 
@@ -66,7 +67,7 @@ def post_item():
     cursor.close()
     cnx.close()
 
-    return "Success!"
+    return "Item inserted: name: {}, quantity: {}".format(rq["name"], rq["quantity"])
 
 # Post an Order
 @app.route("/api/postOrder", methods=['POST'])
@@ -112,7 +113,7 @@ def delete_item(id):
     cursor.close()
     cnx.close()
     
-    return "Success!"
+    return "Deleted item: item_id: {}".format(item_id)
 
 # Delete order
 @app.route('/api/deleteOrder/<id>')
@@ -126,4 +127,19 @@ def delete_order(id):
     cursor.close()
     cnx.close()
     
-    return "Success!"
+    return "Deleted order: order_id: {}".format(order_id)
+
+
+# Edit item
+@app.route('/api/editItem/<id>')
+def edit_item(id):
+    item_id = id
+
+    cnx = mysql.connector.connect(user=USERNAME, password=PASSWORD, host=HOST, database=DATABASE)
+    cursor = cnx.cursor(dictionary=True)
+    cursor.execute("DELETE FROM orders WHERE orders.order_id={}".format(order_id))
+
+    cnx.commit()
+    cursor.close()
+    cnx.close()
+
