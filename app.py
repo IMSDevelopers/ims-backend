@@ -60,7 +60,8 @@ def post_item():
     cursor = cnx.cursor(dictionary=True)
 
     rq = request.form
-    query = ("INSERT INTO items (name, quantity, description, url_image) VALUES ({}, {}, {}, {})".format(rq["name"], rq["quantity"], rq["description"], rq["url_image"]))
+    query = ("INSERT INTO items (name, quantity, description, url_image) VALUES ({}, {}, {}, {})".format(
+        rq["name"], rq["quantity"], rq["description"], rq["url_image"]))
     cursor.execute(query)
 
     cnx.commit()
@@ -76,14 +77,16 @@ def post_order():
     cursor = cnx.cursor(dictionary=True)
 
     rq = request.form
-    query = ("INSERT INTO orders (order_id, item_id, num_ordered, student_id) VALUES ({}, {}, {}, {})".format(rq["order_id"], rq["item_id"], rq["num_ordered"], rq["student_id"]))
+    query = ("INSERT INTO orders (order_id, item_id, num_ordered, student_id) VALUES ({}, {}, {}, {})".format(
+        rq["order_id"], rq["item_id"], rq["num_ordered"], rq["student_id"]))
     cursor.execute(query)
 
     cnx.commit()
     cursor.close()
     cnx.close()
 
-    return "Order inserted: item_id: {}, num_ordered: {}, student_id: {}".format(rq["item_id"], rq["num_ordered"], rq["student_id"])
+    return "Order inserted: item_id: {}, num_ordered: {}, student_id: {}".format(
+        rq["item_id"], rq["num_ordered"], rq["student_id"])
 
 # Get orders
 @app.route('/api/getOrders')
@@ -131,15 +134,19 @@ def delete_order(id):
 
 
 # Edit item
-@app.route('/api/editItem/<id>')
+@app.route('/api/editItem/<id>', methods=['PUT'])
 def edit_item(id):
     item_id = id
 
+    rq = request.form
     cnx = mysql.connector.connect(user=USERNAME, password=PASSWORD, host=HOST, database=DATABASE)
     cursor = cnx.cursor(dictionary=True)
-    cursor.execute("DELETE FROM orders WHERE orders.order_id={}".format(order_id))
+    cursor.execute("UPDATE items SET name = {}, quantity = {}, description = {}, url_image = {} WHERE id = {}".format(
+        rq["name"], rq["quantity"], rq["description"], rq["url_image"], item_id))
 
     cnx.commit()
     cursor.close()
     cnx.close()
+
+    return "Success!"
 
