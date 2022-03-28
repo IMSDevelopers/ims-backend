@@ -75,14 +75,14 @@ def post_order():
     cursor = cnx.cursor(dictionary=True)
 
     rq = request.form
-    query = ("INSERT INTO orders (item_id, num_ordered, student_id) VALUES ({}, {}, {})".format(rq["item_id"], rq["num_ordered"], rq["student_id"]))
+    query = ("INSERT INTO orders (order_id, item_id, num_ordered, student_id) VALUES ({}, {}, {}, {})".format(rq["order_id"], rq["item_id"], rq["num_ordered"], rq["student_id"]))
     cursor.execute(query)
 
     cnx.commit()
     cursor.close()
     cnx.close()
 
-    return "Success!"
+    return "Order inserted: item_id: {}, num_ordered: {}, student_id: {}".format(rq["item_id"], rq["num_ordered"], rq["student_id"])
 
 # Get orders
 @app.route('/api/getOrders')
@@ -101,11 +101,12 @@ def get_orders():
     return jsonify(result)
 
 # Delete item
-@app.route('/api/deleteItem')
-def get_items():
+@app.route('/api/deleteItem/<id>')
+def delete_item(id):
+    item_id = id
     cnx = mysql.connector.connect(user=USERNAME, password=PASSWORD, host=HOST, database=DATABASE)
     cursor = cnx.cursor(dictionary=True)
-    cursor.execute("DELETE FROM items WHERE items.id=" + request.args.get('id'))
+    cursor.execute("DELETE FROM items WHERE items.id={}".format(item_id))
 
     cnx.commit()
     cursor.close()
@@ -114,11 +115,12 @@ def get_items():
     return "Success!"
 
 # Delete order
-@app.route('/api/deleteOrder')
-def get_items():
+@app.route('/api/deleteOrder/<id>')
+def delete_order(id):
+    order_id = id
     cnx = mysql.connector.connect(user=USERNAME, password=PASSWORD, host=HOST, database=DATABASE)
     cursor = cnx.cursor(dictionary=True)
-    cursor.execute("DELETE FROM orders WHERE orders.orderId=" + request.args.get('orderId'))
+    cursor.execute("DELETE FROM orders WHERE orders.order_id={}".format(order_id))
 
     cnx.commit()
     cursor.close()
