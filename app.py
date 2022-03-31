@@ -19,135 +19,159 @@ def home():
 # Get an item by input
 @app.route('/api/getItem/<id>')
 def get_item(id):
-    item_id = id
-    query = "SELECT * FROM items WHERE items.id={}".format(item_id)
-    cnx = mysql.connector.connect(user=USERNAME, password=PASSWORD, host=HOST, database=DATABASE)
-    cursor = cnx.cursor(dictionary=True)
+    try:
+        item_id = id
+        query = "SELECT * FROM items WHERE items.id={}".format(item_id)
+        cnx = mysql.connector.connect(user=USERNAME, password=PASSWORD, host=HOST, database=DATABASE)
+        cursor = cnx.cursor(dictionary=True)
 
-    cursor.execute(query)
+        cursor.execute(query)
 
-    result = []
+        result = []
 
-    for row in cursor:
-        print(row)
-        result.append(row)
+        for row in cursor:
+            print(row)
+            result.append(row)
 
-    cursor.close()
-    cnx.close()
-    return jsonify(result)
+        cursor.close()
+        cnx.close()
+        return jsonify(result)
+    except:
+        return "Failed to get item!"
 
 
 # Get items
 @app.route('/api/getItems')
 def get_items():
-    cnx = mysql.connector.connect(user=USERNAME, password=PASSWORD, host=HOST, database=DATABASE)
-    cursor = cnx.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM items")
+    try:
+        cnx = mysql.connector.connect(user=USERNAME, password=PASSWORD, host=HOST, database=DATABASE)
+        cursor = cnx.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM items")
 
-    result = []
+        result = []
 
-    for row in cursor:
-        result.append(row)
+        for row in cursor:
+            result.append(row)
 
-    cursor.close()
-    cnx.close()
-    return jsonify(result)
+        cursor.close()
+        cnx.close()
+        return jsonify(result)
+    except:
+        return "Failed to get items!"
 
 # Post an Item
 @app.route("/api/postItem", methods=['POST'])
 def post_item():
-    cnx = mysql.connector.connect(user=USERNAME, password=PASSWORD, host=HOST, database=DATABASE)
-    cursor = cnx.cursor(dictionary=True)
+    try:
+        cnx = mysql.connector.connect(user=USERNAME, password=PASSWORD, host=HOST, database=DATABASE)
+        cursor = cnx.cursor(dictionary=True)
 
-    rq = request.get_json()
-    query = ("INSERT INTO items (name, quantity, description, url_image) VALUES (\"{}\", {}, \"{}\", \"{}\")".format(
-        rq["name"], rq["quantity"], rq["description"], rq["url_image"]))
-    cursor.execute(query)
+        rq = request.get_json()
+        query = ("INSERT INTO items (name, quantity, description, url_image) VALUES (\"{}\", {}, \"{}\", \"{}\")".format(
+            rq["name"], rq["quantity"], rq["description"], rq["url_image"]))
+        cursor.execute(query)
 
-    cnx.commit()
-    cursor.close()
-    cnx.close()
+        cnx.commit()
+        cursor.close()
+        cnx.close()
 
-    return "Item inserted: name: {}, quantity: {}".format(rq["name"], rq["quantity"])
+        return "Item inserted: name: {}, quantity: {}".format(rq["name"], rq["quantity"])
+    except:
+        return "Add item failed!"
 
 # Post an Order
 @app.route("/api/postOrder", methods=['POST'])
 def post_order():
-    cnx = mysql.connector.connect(user=USERNAME, password=PASSWORD, host=HOST, database=DATABASE)
-    cursor = cnx.cursor(dictionary=True)
+    try:
+        cnx = mysql.connector.connect(user=USERNAME, password=PASSWORD, host=HOST, database=DATABASE)
+        cursor = cnx.cursor(dictionary=True)
 
-    rq = request.get_json()
-    query = ("INSERT INTO orders (order_id, item_id, num_ordered, student_id) VALUES ({}, {}, {}, \"{}\")".format(
-        rq["order_id"], rq["item_id"], rq["num_ordered"], rq["student_id"]))
-    cursor.execute(query)
+        rq = request.get_json()
+        query = ("INSERT INTO orders (order_id, item_id, num_ordered, student_id) VALUES ({}, {}, {}, \"{}\")".format(
+            rq["order_id"], rq["item_id"], rq["num_ordered"], rq["student_id"]))
+        cursor.execute(query)
 
-    cnx.commit()
-    cursor.close()
-    cnx.close()
+        cnx.commit()
+        cursor.close()
+        cnx.close()
 
-    return "Order inserted: item_id: {}, num_ordered: {}, student_id: {}".format(
-        rq["item_id"], rq["num_ordered"], rq["student_id"])
+        return "Order inserted: item_id: {}, num_ordered: {}, student_id: {}".format(
+            rq["item_id"], rq["num_ordered"], rq["student_id"])
+    except:
+        return "Add order failed!"
 
 # Get orders
 @app.route('/api/getOrders')
 def get_orders():
-    cnx = mysql.connector.connect(user=USERNAME, password=PASSWORD, host=HOST, database=DATABASE)
-    cursor = cnx.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM orders")
+    try:
+        cnx = mysql.connector.connect(user=USERNAME, password=PASSWORD, host=HOST, database=DATABASE)
+        cursor = cnx.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM orders")
 
-    result = []
+        result = []
 
-    for row in cursor:
-        result.append(row)
+        for row in cursor:
+            result.append(row)
 
-    cursor.close()
-    cnx.close()
-    return jsonify(result)
+        cursor.close()
+        cnx.close()
+        return jsonify(result)
+    except:
+        return "Failed to get orders!"
 
 # Delete item
 @app.route('/api/deleteItem/<id>')
 def delete_item(id):
-    item_id = id
-    cnx = mysql.connector.connect(user=USERNAME, password=PASSWORD, host=HOST, database=DATABASE)
-    cursor = cnx.cursor(dictionary=True)
-    cursor.execute("DELETE FROM items WHERE items.id={}".format(item_id))
+    try:
+        item_id = id
+        cnx = mysql.connector.connect(user=USERNAME, password=PASSWORD, host=HOST, database=DATABASE)
+        cursor = cnx.cursor(dictionary=True)
+        cursor.execute("DELETE FROM items WHERE items.id={}".format(item_id))
 
-    cnx.commit()
-    cursor.close()
-    cnx.close()
-    
-    return "Deleted item: item_id: {}".format(item_id)
+        cnx.commit()
+        cursor.close()
+        cnx.close()
+        
+        return "Deleted item: item_id: {}".format(item_id)
+    except:
+        return "Delete item failed!"
 
 # Delete order
 @app.route('/api/deleteOrder/<id>')
 def delete_order(id):
-    order_id = id
-    cnx = mysql.connector.connect(user=USERNAME, password=PASSWORD, host=HOST, database=DATABASE)
-    cursor = cnx.cursor(dictionary=True)
-    cursor.execute("DELETE FROM orders WHERE orders.order_id={}".format(order_id))
+    try:
+        order_id = id
+        cnx = mysql.connector.connect(user=USERNAME, password=PASSWORD, host=HOST, database=DATABASE)
+        cursor = cnx.cursor(dictionary=True)
+        cursor.execute("DELETE FROM orders WHERE orders.order_id={}".format(order_id))
 
-    cnx.commit()
-    cursor.close()
-    cnx.close()
-    
-    return "Deleted order: order_id: {}".format(order_id)
+        cnx.commit()
+        cursor.close()
+        cnx.close()
+        
+        return "Deleted order: order_id: {}".format(order_id)
+    except:
+        return "Delete order failed!"
 
 
 # Edit item
 @app.route('/api/editItem/<id>', methods=['PUT'])
 def edit_item(id):
-    item_id = id
-    cnx = mysql.connector.connect(user=USERNAME, password=PASSWORD, host=HOST, database=DATABASE)
-    cursor = cnx.cursor(dictionary=True)
-    
-    rq = request.get_json()
-    
-    cursor.execute("UPDATE items SET name = \"{}\", quantity = {}, description = \"{}\", url_image = \"{}\" WHERE id = {}".format(
-        rq["name"], rq["quantity"], rq["description"], rq["url_image"], item_id))
+    try:
+        item_id = id
+        cnx = mysql.connector.connect(user=USERNAME, password=PASSWORD, host=HOST, database=DATABASE)
+        cursor = cnx.cursor(dictionary=True)
+        
+        rq = request.get_json()
+        
+        cursor.execute("UPDATE items SET name = \"{}\", quantity = {}, description = \"{}\", url_image = \"{}\" WHERE id = {}".format(
+            rq["name"], rq["quantity"], rq["description"], rq["url_image"], item_id))
 
-    cnx.commit()
-    cursor.close()
-    cnx.close()
+        cnx.commit()
+        cursor.close()
+        cnx.close()
 
-    return "Success!"
+        return "Success!"
+    except:
+        return "Edit item failed!"
 
