@@ -3,9 +3,21 @@ from flask import jsonify, request, make_response
 from flask_cors import CORS
 import mysql.connector
 
+#imports for AWS
+import boto3
+from config import S3_BUCKET, S3_KEY, S3_SECRET_ACCESS_KEY
+
+
 # Create the flask app
 app = Flask(__name__)
 CORS(app)
+
+#AWS S3 CLIENT
+location = "us-west-1"
+s3 = boto3.client(
+    's3',
+    aws_access_key_id=S3_KEY,
+    aws_secret_access_key=S3_SECRET_ACCESS_KEY )
 
 USERNAME = "admin"
 PASSWORD = "admin123"
@@ -58,6 +70,33 @@ def get_items():
         return jsonify(result)
     except:
         return "Failed to get items!"
+
+
+#UPLOAD FILE TO AWS S3 BUCKET
+@app.route('/api/upload', methods=['POST'])
+def upload():
+    random_code = secrets.token_bytes(16) #Generate 16 random bytes
+    hex_code = random_code.hex() 
+
+    file = request.files['file']
+    try:
+        s3.upload_fileobj(
+            file,
+            S3_BUCKET,
+            hex_code,
+            ExtraArgs={
+                "ACL": "bucket-owner-full-control",
+                "ContentType": "multipart/form-data"    #Set appropriate content type as per the file
+            }
+        )
+        url = "https://%s.s3.amazonaws.com/%s" % (S3_BUCKET, hex_code)
+        print(url) #this url needs to be saved on the database
+
+    except Exception as e:
+        print("Something Happened: ", e)
+        return e
+    return "Success!"
+    
 
 # Post an Item
 @app.route("/api/postItem", methods=['POST'])
