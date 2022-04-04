@@ -6,6 +6,7 @@ import mysql.connector
 #imports for AWS
 import boto3
 from config import S3_BUCKET, S3_KEY, S3_SECRET_ACCESS_KEY
+import secrets
 
 
 # Create the flask app
@@ -75,10 +76,12 @@ def get_items():
 #UPLOAD FILE TO AWS S3 BUCKET
 @app.route('/api/upload', methods=['POST'])
 def upload():
-    random_code = secrets.token_bytes(16) #Generate 16 random bytes
+    print("Accessed")
+    random_code = secrets.token_bytes(12) #Generate 12 random bytes
     hex_code = random_code.hex() 
-
+    
     file = request.files['file']
+    print(file)
     try:
         s3.upload_fileobj(
             file,
@@ -95,7 +98,7 @@ def upload():
     except Exception as e:
         print("Something Happened: ", e)
         return e
-    return "Success!"
+    return  url, 200
     
 
 # Post an Item
