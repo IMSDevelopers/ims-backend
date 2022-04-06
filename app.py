@@ -18,7 +18,7 @@ location = "us-west-1"
 s3 = boto3.client(
     's3',
     aws_access_key_id=S3_KEY,
-    aws_secret_access_key=S3_SECRET_ACCESS_KEY )
+    aws_secret_access_key=S3_SECRET_ACCESS_KEY)
 
 USERNAME = "admin"
 PASSWORD = "admin123"
@@ -129,18 +129,42 @@ def post_order():
         cursor = cnx.cursor(dictionary=True)
 
         rq = request.get_json()
-        query = ("INSERT INTO orders (order_id, item_id, num_ordered, student_id) VALUES ({}, {}, {}, \"{}\")".format(
-            rq["order_id"], rq["item_id"], rq["num_ordered"], rq["student_id"]))
+        query = ("INSERT INTO orders (order_id, item_id, num_ordered, student_id, order_status) VALUES ({}, {}, {}, \"{}\", \"{}\")".format(
+            rq["order_id"], rq["item_id"], rq["num_ordered"], rq["student_id"], rq["order_status"]))
         cursor.execute(query)
 
         cnx.commit()
         cursor.close()
         cnx.close()
 
-        return "Order inserted: item_id: {}, num_ordered: {}, student_id: {}".format(
-            rq["item_id"], rq["num_ordered"], rq["student_id"])
+        return "Order inserted: order_id: {}, item_id: {}, num_ordered: {}, student_id: {}".format(
+            rq["order_id"], rq["item_id"], rq["num_ordered"], rq["student_id"])
     except:
-        return "Add order failed!"
+        return "Post order failed!"
+
+
+# {
+#   
+#   {
+#   "order_id": 3,
+#   "order_status": "pending",
+#   "student_id": "683116",
+#   "items": [
+#     {
+#       "item_id": 3,
+#       "name": "8.5 nuts",
+#       "num_ordered": 70,
+#       "description": "These are some nuts"
+#     },      
+#     {
+#       "item_id": 5,
+#       "name": "Laptop",
+#       "num_ordered": 3,
+#       "description": "Terabyte"
+#     }
+#   ]
+#   ]
+# }
 
 # Get orders
 @app.route('/api/getOrders')
@@ -148,12 +172,31 @@ def get_orders():
     try:
         cnx = mysql.connector.connect(user=USERNAME, password=PASSWORD, host=HOST, database=DATABASE)
         cursor = cnx.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM orders")
+        cursor.execute("SELECT orders.order_id, orders.order_status, orders.student_id, \
+                        items.id as item_id, items.name, items.description, \
+                        items.url_image, orders.num_ordered \
+                        FROM orders, items WHERE orders.item_id = items.id;")
+
+        initial = [row for row in cursor]
 
         result = []
+        for row in initial:
+            order = dict(order_id=row["order_id"], order_status=row["order_status"], student_id=row["student_id"], items=[])
+            result_order_ids = [r["order_id"] for r in result]
+            if row["order_id"] not in result_order_ids:
+                result.append(order)
+            
 
-        for row in cursor:
-            result.append(row)
+        for row in initial:
+            order_id = row["order_id"]
+            for order in result:
+                if order["order_id"] == order_id: # this is the order, insert items into it
+                    item = dict(item_id=row["item_id"], item_name=row["name"], \
+                                description=row["description"], url_image=row["url_image"], num_ordered=row["num_ordered"])
+                    order["items"].append(item)
+                    break
+
+        print(result)
 
         cursor.close()
         cnx.close()
@@ -216,4 +259,3 @@ def edit_item(id):
         return "Success!"
     except:
         return "Edit item failed!"
-
