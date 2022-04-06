@@ -3,31 +3,50 @@ from flask import jsonify, request, make_response
 from flask_cors import CORS
 import mysql.connector
 
-#imports for AWS
+# imports for AWS
 import boto3
 from config import S3_BUCKET, S3_KEY, S3_SECRET_ACCESS_KEY
 import secrets
 
-
 # Create the flask app
 app = Flask(__name__)
 CORS(app)
-
-#AWS S3 CLIENT
-location = "us-west-1"
-s3 = boto3.client(
-    's3',
-    aws_access_key_id=S3_KEY,
-    aws_secret_access_key=S3_SECRET_ACCESS_KEY)
 
 USERNAME = "admin"
 PASSWORD = "admin123"
 HOST = "capstonetest-db.cogzcve8vrzk.us-east-1.rds.amazonaws.com"
 DATABASE = "ims"
 
-@app.route("/")
-def home():
-    return "Hello, Flask!"
+# AWS S3 CLIENT
+location = "us-west-1"
+s3 = boto3.client(
+    's3',
+    aws_access_key_id=S3_KEY,
+    aws_secret_access_key=S3_SECRET_ACCESS_KEY)
+
+
+#########################################
+#                ITEMS                  #
+#########################################
+
+# Get items
+@app.route('/api/getItems')
+def get_items():
+    try:
+        cnx = mysql.connector.connect(user=USERNAME, password=PASSWORD, host=HOST, database=DATABASE)
+        cursor = cnx.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM items")
+
+        result = []
+
+        for row in cursor:
+            result.append(row)
+
+        cursor.close()
+        cnx.close()
+        return jsonify(result)
+    except:
+        return "Failed to get items!"
 
 # Get an item by input
 @app.route('/api/getItem/<id>')
@@ -52,55 +71,6 @@ def get_item(id):
     except:
         return "Failed to get item!"
 
-
-# Get items
-@app.route('/api/getItems')
-def get_items():
-    try:
-        cnx = mysql.connector.connect(user=USERNAME, password=PASSWORD, host=HOST, database=DATABASE)
-        cursor = cnx.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM items")
-
-        result = []
-
-        for row in cursor:
-            result.append(row)
-
-        cursor.close()
-        cnx.close()
-        return jsonify(result)
-    except:
-        return "Failed to get items!"
-
-
-#UPLOAD FILE TO AWS S3 BUCKET
-@app.route('/api/upload', methods=['POST'])
-def upload():
-    print("Accessed")
-    random_code = secrets.token_bytes(12) #Generate 12 random bytes
-    hex_code = random_code.hex() 
-    
-    file = request.files['file']
-    print(file)
-    try:
-        s3.upload_fileobj(
-            file,
-            S3_BUCKET,
-            hex_code,
-            ExtraArgs={
-                "ACL": "bucket-owner-full-control",
-                "ContentType": "multipart/form-data"    #Set appropriate content type as per the file
-            }
-        )
-        url = "https://%s.s3.amazonaws.com/%s" % (S3_BUCKET, hex_code)
-        print(url) #this url needs to be saved on the database
-
-    except Exception as e:
-        print("Something Happened: ", e)
-        return e
-    return  url, 200
-    
-
 # Post an Item
 @app.route("/api/postItem", methods=['POST'])
 def post_item():
@@ -120,6 +90,48 @@ def post_item():
         return "Item inserted: name: {}, quantity: {}".format(rq["name"], rq["quantity"])
     except:
         return "Add item failed!"
+
+# Delete item
+@app.route('/api/deleteItem/<id>')
+def delete_item(id):
+    try:
+        item_id = id
+        cnx = mysql.connector.connect(user=USERNAME, password=PASSWORD, host=HOST, database=DATABASE)
+        cursor = cnx.cursor(dictionary=True)
+        cursor.execute("DELETE FROM items WHERE items.id={}".format(item_id))
+
+        cnx.commit()
+        cursor.close()
+        cnx.close()
+        
+        return "Deleted item: item_id: {}".format(item_id)
+    except:
+        return "Delete item failed!"
+
+# Edit item
+@app.route('/api/editItem/<id>', methods=['PUT'])
+def edit_item(id):
+    try:
+        item_id = id
+        cnx = mysql.connector.connect(user=USERNAME, password=PASSWORD, host=HOST, database=DATABASE)
+        cursor = cnx.cursor(dictionary=True)
+        
+        rq = request.get_json()
+        
+        cursor.execute("UPDATE items SET name = \"{}\", quantity = {}, description = \"{}\", url_image = \"{}\" WHERE id = {}".format(
+            rq["name"], rq["quantity"], rq["description"], rq["url_image"], item_id))
+
+        cnx.commit()
+        cursor.close()
+        cnx.close()
+
+        return "Success!"
+    except:
+        return "Edit item failed!"
+
+#########################################
+#                ORDERS                 #
+#########################################
 
 # Post an Order
 @app.route("/api/postOrder", methods=['POST'])
@@ -141,30 +153,6 @@ def post_order():
             rq["order_id"], rq["item_id"], rq["num_ordered"], rq["student_id"])
     except:
         return "Post order failed!"
-
-
-# {
-#   
-#   {
-#   "order_id": 3,
-#   "order_status": "pending",
-#   "student_id": "683116",
-#   "items": [
-#     {
-#       "item_id": 3,
-#       "name": "8.5 nuts",
-#       "num_ordered": 70,
-#       "description": "These are some nuts"
-#     },      
-#     {
-#       "item_id": 5,
-#       "name": "Laptop",
-#       "num_ordered": 3,
-#       "description": "Terabyte"
-#     }
-#   ]
-#   ]
-# }
 
 # Get orders
 @app.route('/api/getOrders')
@@ -204,23 +192,6 @@ def get_orders():
     except:
         return "Failed to get orders!"
 
-# Delete item
-@app.route('/api/deleteItem/<id>')
-def delete_item(id):
-    try:
-        item_id = id
-        cnx = mysql.connector.connect(user=USERNAME, password=PASSWORD, host=HOST, database=DATABASE)
-        cursor = cnx.cursor(dictionary=True)
-        cursor.execute("DELETE FROM items WHERE items.id={}".format(item_id))
-
-        cnx.commit()
-        cursor.close()
-        cnx.close()
-        
-        return "Deleted item: item_id: {}".format(item_id)
-    except:
-        return "Delete item failed!"
-
 # Delete order
 @app.route('/api/deleteOrder/<id>')
 def delete_order(id):
@@ -238,24 +209,38 @@ def delete_order(id):
     except:
         return "Delete order failed!"
 
+#########################################
+#                  S3                   #
+#########################################
 
-# Edit item
-@app.route('/api/editItem/<id>', methods=['PUT'])
-def edit_item(id):
+@app.route('/api/upload', methods=['POST'])
+def upload():
+    print("Accessed")
+    random_code = secrets.token_bytes(12) #Generate 12 random bytes
+    hex_code = random_code.hex() 
+    
+    file = request.files['file']
+    print(file)
     try:
-        item_id = id
-        cnx = mysql.connector.connect(user=USERNAME, password=PASSWORD, host=HOST, database=DATABASE)
-        cursor = cnx.cursor(dictionary=True)
-        
-        rq = request.get_json()
-        
-        cursor.execute("UPDATE items SET name = \"{}\", quantity = {}, description = \"{}\", url_image = \"{}\" WHERE id = {}".format(
-            rq["name"], rq["quantity"], rq["description"], rq["url_image"], item_id))
+        s3.upload_fileobj(
+            file,
+            S3_BUCKET,
+            hex_code,
+            ExtraArgs={
+                "ACL": "bucket-owner-full-control",
+                "ContentType": "multipart/form-data"    #Set appropriate content type as per the file
+            }
+        )
+        url = "https://%s.s3.amazonaws.com/%s" % (S3_BUCKET, hex_code)
+        print(url) #this url needs to be saved on the database
 
-        cnx.commit()
-        cursor.close()
-        cnx.close()
+    except Exception as e:
+        print("Something Happened: ", e)
+        return e
+    return  url, 200
+    
 
-        return "Success!"
-    except:
-        return "Edit item failed!"
+
+
+
+
