@@ -132,6 +132,42 @@ def edit_item(id):
 #                ORDERS                 #
 #########################################
 
+# Get orders
+@app.route('/api/getOrders')
+def get_orders():
+    try:
+        cnx = mysql.connector.connect(user=USERNAME, password=PASSWORD, host=HOST, database=DATABASE)
+        cursor = cnx.cursor(dictionary=True)
+        cursor.execute("SELECT orders.order_id, orders.order_status, orders.student_id, \
+                        items.id as item_id, items.name, items.description, \
+                        items.url_image, items.quantity, orders.num_ordered \
+                        FROM orders, items WHERE orders.item_id = items.id;")
+
+        initial = [row for row in cursor]
+
+        result = []
+        for row in initial:
+            order = dict(order_id=row["order_id"], order_status=row["order_status"], student_id=row["student_id"], items=[])
+            result_order_ids = [r["order_id"] for r in result]
+            if row["order_id"] not in result_order_ids:
+                result.append(order)
+            
+
+        for row in initial:
+            order_id = row["order_id"]
+            for order in result:
+                if order["order_id"] == order_id: # this is the order, insert items into it
+                    item = dict(item_id=row["item_id"], item_name=row["name"], quantity=row["quantity"], \
+                                description=row["description"], url_image=row["url_image"], num_ordered=row["num_ordered"])
+                    order["items"].append(item)
+                    break
+
+        cursor.close()
+        cnx.close()
+        return jsonify(result)
+    except:
+        return "Failed to get orders!"
+
 # Post an Order
 @app.route("/api/postOrder", methods=['POST'])
 def post_order():
@@ -153,45 +189,8 @@ def post_order():
     except:
         return "Post order failed!"
 
-# Get orders
-@app.route('/api/getOrders')
-def get_orders():
-    try:
-        cnx = mysql.connector.connect(user=USERNAME, password=PASSWORD, host=HOST, database=DATABASE)
-        cursor = cnx.cursor(dictionary=True)
-        cursor.execute("SELECT orders.order_id, orders.order_status, orders.student_id, \
-                        items.id as item_id, items.name, items.description, \
-                        items.url_image, orders.num_ordered \
-                        FROM orders, items WHERE orders.item_id = items.id;")
 
-        initial = [row for row in cursor]
-
-        result = []
-        for row in initial:
-            order = dict(order_id=row["order_id"], order_status=row["order_status"], student_id=row["student_id"], items=[])
-            result_order_ids = [r["order_id"] for r in result]
-            if row["order_id"] not in result_order_ids:
-                result.append(order)
-            
-
-        for row in initial:
-            order_id = row["order_id"]
-            for order in result:
-                if order["order_id"] == order_id: # this is the order, insert items into it
-                    item = dict(item_id=row["item_id"], item_name=row["name"], \
-                                description=row["description"], url_image=row["url_image"], num_ordered=row["num_ordered"])
-                    order["items"].append(item)
-                    break
-
-        print(result)
-
-        cursor.close()
-        cnx.close()
-        return jsonify(result)
-    except:
-        return "Failed to get orders!"
-
-# Delete order
+# Delete/reject order
 @app.route('/api/deleteOrder/<id>')
 def delete_order(id):
     try:
@@ -207,6 +206,35 @@ def delete_order(id):
         return "Deleted order: order_id: {}".format(order_id)
     except:
         return "Delete order failed!"
+
+# Approve order
+# When an order is approved, we still want to delete it,
+# but first we have to update the items table
+@app.route('/api/updateQuantity/<id>', methods=['PUT'])
+def approve_order(id):
+    try:
+        item_id = id
+        cnx = mysql.connector.connect(user=USERNAME, password=PASSWORD, host=HOST, database=DATABASE)
+        cursor = cnx.cursor(dictionary=True)
+
+        cursor.execute("SELECT quantity FROM items WHERE id={}".format(item_id))
+
+        qty = 0
+
+        for row in cursor:
+            qty = row["quantity"]
+
+        rq = request.get_json()
+        updated_qty = qty - rq["num_ordered"]
+        cursor.execute("UPDATE items SET quantity={} WHERE items.id={}".format(updated_qty, item_id))
+
+        cnx.commit()
+        cursor.close()
+        cnx.close()
+
+        return "Quantity updated!"
+    except:
+        return "Approve order failed!"
 
 #########################################
 #                  S3                   #
