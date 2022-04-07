@@ -24,7 +24,6 @@ s3 = boto3.client(
     aws_access_key_id=S3_KEY,
     aws_secret_access_key=S3_SECRET_ACCESS_KEY)
 
-
 #########################################
 #                ITEMS                  #
 #########################################
