@@ -138,16 +138,16 @@ def get_orders():
     try:
         cnx = mysql.connector.connect(user=USERNAME, password=PASSWORD, host=HOST, database=DATABASE)
         cursor = cnx.cursor(dictionary=True)
-        cursor.execute("SELECT orders.order_id, orders.order_status, orders.student_id, \
+        cursor.execute("SELECT orders.order_id, orders.student_id, \
                         items.id as item_id, items.name, items.description, \
-                        items.url_image, items.quantity, orders.num_ordered \
+                        items.url_image, items.quantity, orders.num_ordered, orders.time_placed \
                         FROM orders, items WHERE orders.item_id = items.id;")
 
         initial = [row for row in cursor]
 
         result = []
         for row in initial:
-            order = dict(order_id=row["order_id"], order_status=row["order_status"], student_id=row["student_id"], items=[])
+            order = dict(order_id=row["order_id"], student_id=row["student_id"], time_placed=row["time_placed"], items=[])
             result_order_ids = [r["order_id"] for r in result]
             if row["order_id"] not in result_order_ids:
                 result.append(order)
@@ -176,8 +176,8 @@ def post_order():
         cursor = cnx.cursor(dictionary=True)
 
         rq = request.get_json()
-        query = ("INSERT INTO orders (order_id, item_id, num_ordered, student_id, order_status) VALUES ({}, {}, {}, \"{}\", \"{}\")".format(
-            rq["order_id"], rq["item_id"], rq["num_ordered"], rq["student_id"], rq["order_status"]))
+        query = ("INSERT INTO orders (order_id, item_id, num_ordered, student_id, time_placed) VALUES ({}, {}, {}, {}, \"{}\")".format(
+            rq["order_id"], rq["item_id"], rq["num_ordered"], rq["student_id"], rq["time_placed"]))
         cursor.execute(query)
 
         cnx.commit()
