@@ -90,14 +90,32 @@ def post_item():
     except:
         return "Add item failed!"
 
+
 # Delete item
 @app.route('/api/deleteItem/<id>')
 def delete_item(id):
     try:
         item_id = id
+
         cnx = mysql.connector.connect(user=USERNAME, password=PASSWORD, host=HOST, database=DATABASE)
         cursor = cnx.cursor(dictionary=True)
+
+        query = "SELECT * FROM items WHERE items.id={}".format(item_id)
+        cursor.execute(query)
+        result = []
+        for row in cursor:
+            result.append(row)
+        url_item_image=result[0]['url_image']
+
         cursor.execute("DELETE FROM items WHERE items.id={}".format(item_id))
+
+        if (not url_item_image):
+            return "Success!"
+        #key to delete the item from S3
+        key_item=url_item_image[-24:]
+        print(key_item)
+        #get key from s3 url (last 24 characters) nd delete using 
+        s3.delete_object(Bucket = S3_BUCKET, Key=key_item)
 
         cnx.commit()
         cursor.close()
@@ -114,11 +132,26 @@ def edit_item(id):
         item_id = id
         cnx = mysql.connector.connect(user=USERNAME, password=PASSWORD, host=HOST, database=DATABASE)
         cursor = cnx.cursor(dictionary=True)
+        query = "SELECT * FROM items WHERE items.id={}".format(item_id)
+        cursor.execute(query)
+        result = []
+        for row in cursor:
+            result.append(row)
+        url_item_image=result[0]['url_image']
         
         rq = request.get_json()
         
         cursor.execute("UPDATE items SET name = \"{}\", quantity = {}, description = \"{}\", url_image = \"{}\" WHERE id = {}".format(
             rq["name"], rq["quantity"], rq["description"], rq["url_image"], item_id))
+
+        if (not url_item_image):
+            return "Success!"
+        #key to delete the item from S3
+        key_item=url_item_image[-24:]
+        print(key_item)
+        #get key from s3 url (last 24 characters) nd delete using 
+        s3.delete_object(Bucket = S3_BUCKET, Key=key_item)
+
 
         cnx.commit()
         cursor.close()
@@ -247,7 +280,7 @@ def upload():
     hex_code = random_code.hex() 
     
     file = request.files['file']
-    print(file)
+    #print(file)
     try:
         s3.upload_fileobj(
             file,
@@ -259,7 +292,7 @@ def upload():
             }
         )
         url = "https://%s.s3.amazonaws.com/%s" % (S3_BUCKET, hex_code)
-        print(url) #this url needs to be saved on the database
+        #print(url) #this url needs to be saved on the database
 
     except Exception as e:
         print("Something Happened: ", e)
