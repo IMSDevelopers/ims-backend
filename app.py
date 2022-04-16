@@ -10,8 +10,12 @@ from config import S3_BUCKET, S3_KEY, S3_SECRET_ACCESS_KEY
 import secrets
 
 # Create the flask app
-app = Flask(__name__, static_folder='build', static_url_path='/')
+app = Flask(__name__)
 CORS(app)
+
+if __name__ == '__main__':
+    serve(app, host='0.0.0.0', port=80)
+
 
 USERNAME = "admin"
 PASSWORD = "admin123"
@@ -24,10 +28,6 @@ s3 = boto3.client(
     's3',
     aws_access_key_id=S3_KEY,
     aws_secret_access_key=S3_SECRET_ACCESS_KEY)
-
-@app.route("/")
-def index():
-    return app.send_static_file('index.html')
 
 #########################################
 #                ITEMS                  #
