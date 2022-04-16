@@ -6,7 +6,7 @@ import mysql.connector
 
 # imports for AWS
 import boto3
-from config import S3_BUCKET, S3_KEY, S3_SECRET_ACCESS_KEY
+#from config import S3_BUCKET, S3_KEY, S3_SECRET_ACCESS_KEY
 import secrets
 
 # Create the flask app
@@ -21,6 +21,9 @@ USERNAME = "admin"
 PASSWORD = "admin123"
 HOST = "capstonetest-db.cogzcve8vrzk.us-east-1.rds.amazonaws.com"
 DATABASE = "ims"
+S3_BUCKET = "capstone-bucket-ims"
+S3_KEY = "AKIAYTKMM3LD35M54LPY"
+S3_SECRET_ACCESS_KEY = "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"
 
 # AWS S3 CLIENT
 location = "us-west-1"
@@ -268,7 +271,7 @@ def upload():
     hex_code = random_code.hex() 
     
     file = request.files['file']
-    #print(file)
+    print(file)
     try:
         s3.upload_fileobj(
             file,
