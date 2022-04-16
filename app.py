@@ -13,9 +13,9 @@ import secrets
 app = Flask(__name__)
 CORS(app)
 
-if __name__ == '__main__':
-    serve(app, host='0.0.0.0', port=80)
-
+@app.route('/')
+def index():
+    return "<h1>Hello Flask!</h1>"
 
 USERNAME = "admin"
 PASSWORD = "admin123"
@@ -305,7 +305,9 @@ def upload():
     return  url, 200
     
 
-
+if __name__ == "__main__":
+    app.debug = True
+    app.run()
 
 
 
