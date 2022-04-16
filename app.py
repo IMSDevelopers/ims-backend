@@ -114,13 +114,13 @@ def delete_item(id):
 
         cursor.execute("DELETE FROM items WHERE items.id={}".format(item_id))
 
-        if (not url_item_image):
-            return "Success!"
-        #key to delete the item from S3
-        key_item=url_item_image[-24:]
-        print(key_item)
-        #get key from s3 url (last 24 characters) nd delete using 
-        s3.delete_object(Bucket = S3_BUCKET, Key=key_item)
+        # if (not url_item_image):
+        #     return "Success!"
+        # #key to delete the item from S3
+        # key_item=url_item_image[-24:]
+        # print(key_item)
+        # #get key from s3 url (last 24 characters) nd delete using 
+        # s3.delete_object(Bucket = S3_BUCKET, Key=key_item)
 
         cnx.commit()
         cursor.close()
